@@ -1,0 +1,110 @@
+# Preprocessing Configuration for Deepfake Detection
+
+# Face Detection Settings
+detection:
+  model: "retinaface"  # retinaface or mtcnn
+  device: "cuda"  # cuda or cpu
+  confidence_threshold: 0.5
+  nms_threshold: 0.4
+  keep_top_k: 1  # Keep only the most confident face
+
+  # RetinaFace specific
+  retinaface:
+    network: "resnet50"  # resnet50 or mobilenet
+    pretrained_path: "models/pretrained/retinaface_resnet50.pth"
+    input_size: [640, 640]
+
+# Face Alignment Settings
+alignment:
+  output_size: [224, 224]  # EfficientNet-B4 input size
+  reference_landmarks:
+    # Standard 5-point landmarks (normalized coordinates)
+    left_eye: [0.31, 0.32]
+    right_eye: [0.69, 0.32]
+    nose: [0.50, 0.55]
+    left_mouth: [0.35, 0.75]
+    right_mouth: [0.65, 0.75]
+
+  # Alignment method
+  method: "similarity"  # similarity or affine
+  border_mode: "constant"  # constant, reflect, replicate
+  border_value: 0
+
+# Quality Assessment Settings
+quality:
+  enabled: true
+  min_face_size: 50  # Minimum face dimension in pixels
+  max_face_size: 2000  # Maximum face dimension
+
+  # Blur detection
+  blur_threshold: 100.0  # Laplacian variance threshold
+
+  # Occlusion detection
+  check_occlusion: true
+  occlusion_threshold: 0.3
+
+  # Brightness/Contrast
+  min_brightness: 30
+  max_brightness: 225
+  min_contrast: 20
+
+# Preprocessing Pipeline Settings
+pipeline:
+  # Normalization
+  normalize:
+    enabled: true
+    mean: [0.485, 0.456, 0.406]  # ImageNet statistics
+    std: [0.229, 0.224, 0.225]
+
+  # Color space
+  color_space: "RGB"  # RGB or BGR
+
+  # Save options
+  save_intermediate: true  # Save intermediate results
+  save_format: "png"  # png or jpg
+  jpg_quality: 95
+
+# Dataset Specific Settings
+datasets:
+  lfw_fer:
+    path: "data/raw/LFW-FER"
+    image_extension: ".jpg"
+    label_file: null  # No labels needed (all real)
+
+  deeper_forensics:
+    path: "data/raw/DeeperForensics"
+    real_folder: "real"
+    fake_folder: "fake"
+    image_extension: ".png"
+
+  gen_ai:
+    path: "data/raw/GanAI"
+    fake_folder: "fake"
+    image_extension: ".png"
+
+# Output Settings
+output:
+  base_dir: "data/processed"
+  faces_dir: "faces"
+  landmarks_dir: "landmarks"
+  metadata_dir: "metadata"
+
+  # File naming
+  naming_pattern: "{dataset}_{label}_{id:06d}"
+
+  # Metadata format
+  metadata_format: "csv"  # csv or json
+
+# Logging Settings
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  log_dir: "outputs/logs"
+  log_file: "preprocessing_{timestamp}.log"
+  console_output: true
+
+# Performance Settings
+performance:
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+  prefetch_factor: 2

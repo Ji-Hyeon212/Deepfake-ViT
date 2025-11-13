@@ -1,0 +1,131 @@
+# Training Configuration for Deepfake Detection
+
+# Model Architecture
+model:
+  name: "DeepfakeDetectionModel"
+  feature_extractor:
+    pretrained: true
+    freeze_bn: false
+    dropout_rate: 0.4
+    use_attention: true
+    attention_config:
+      use_landmark: true
+      use_spatial: true
+      use_channel: true
+
+  classifier:
+    hidden_dims: [512, 128, 32]
+    dropout_rate: 0.4
+    num_classes: 2
+
+# Data
+data:
+  processed_dir: "data/processed"
+  batch_size: 8
+  num_workers: 4
+  pin_memory: true
+  use_landmarks: true
+
+  # Data Augmentation (optional, future extension)
+  augmentation:
+    random_flip: true
+    random_rotation: 5  # degrees
+    color_jitter: 0.1
+
+# Training
+training:
+  num_epochs: 10
+  gradient_clip: 1.0
+  accumulation_steps: 1
+  use_amp: false  # Automatic Mixed Precision
+
+  # Optimizer
+  optimizer:
+    type: "AdamW"  # Adam, AdamW, SGD
+    lr: 0.0001
+    weight_decay: 0.0001
+    betas: [0.9, 0.999]
+
+    # SGD specific
+    momentum: 0.9
+    nesterov: true
+
+  # Learning Rate Scheduler
+  scheduler:
+    type: "CosineAnnealingWarmRestarts"  # StepLR, CosineAnnealingLR, ReduceLROnPlateau, CosineAnnealingWarmRestarts
+
+    # StepLR
+    step_size: 30
+    gamma: 0.1
+
+    # CosineAnnealingLR
+    T_max: 50
+    eta_min: 0.000001
+
+    # ReduceLROnPlateau
+    mode: "min"
+    factor: 0.5
+    patience: 5
+    min_lr: 0.000001
+
+    # CosineAnnealingWarmRestarts
+    T_0: 10
+    T_mult: 2
+    eta_min_restart: 0.000001
+
+  # Loss Function
+  loss:
+    type: "CombinedLoss"  # CrossEntropy, FocalLoss, CombinedLoss, LabelSmoothing
+
+    # CombinedLoss weights
+    weights:
+      ce: 1.0
+      focal: 0.5
+      contrastive: 0.2
+
+    # FocalLoss
+    focal_gamma: 2.0
+
+    # LabelSmoothing
+    smoothing: 0.1
+
+    # Class weights (optional, for imbalanced data)
+    class_weights: null  # [1.0, 1.5] or null
+
+# Validation & Evaluation
+validation:
+  eval_freq: 1  # epochs
+  save_freq: 5  # epochs
+  print_freq: 10  # batches
+
+# Early Stopping
+early_stopping:
+  patience: 10
+  min_delta: 0.001
+
+# Checkpointing
+checkpoint:
+  save_dir: "checkpoints"
+  max_keep: 5
+  save_best_only: false
+
+# Logging
+logging:
+  log_dir: "runs"
+  tensorboard: true
+  log_freq: 10  # batches
+
+# Hardware
+hardware:
+  device: "cpu"  # cuda or cpu
+  gpu_ids: [0]  # Multi-GPU training
+  num_workers: 4
+
+# Reproducibility
+seed: 42
+
+# Experiment
+experiment:
+  name: "deepfake_detection_efficientnet_b4"
+  tags: ["efficientnet", "landmark_attention", "combined_loss"]
+  notes: "EfficientNet-B4 with landmark-based attention for deepfake detection"

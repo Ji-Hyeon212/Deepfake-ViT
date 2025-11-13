@@ -229,6 +229,7 @@ def main(args):
         config=trainer_config
     )
 
+    start_epoch = 1
     # 체크포인트에서 재개
     if args.resume:
         start_epoch = trainer.resume_from_checkpoint(args.resume)

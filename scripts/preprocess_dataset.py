@@ -41,25 +41,26 @@ def load_lfw_fer_dataset(config: dict) -> list:
 
     return dataset_items
 
-
-def load_deeper_forensics_dataset(config: dict) -> list:
+def _load_folder_based_dataset(config: dict, dataset_name: str) -> list:
     """
-    Load DeeperForensics-1.0 dataset
+    (범용 함수) real/fake 하위 폴더 구조를 가진 데이터셋 로드
+    이미지 및 비디오 프레임 샘플링 동시 지원
 
-    Returns:
-        List of (image_path, image_id, dataset_name, label) tuples
+    Args:
+        config: config.yaml의 해당 데이터셋 설정 (예: config['datasets']['deeper_forensics'])
+        dataset_name: 'deeper_forensics', 'gen_ai' 등
     """
-    dataset_path = Path(config['datasets']['deeper_forensics']['path'])
-    real_folder = config['datasets']['deeper_forensics']['real_folder']
-    fake_folder = config['datasets']['deeper_forensics']['fake_folder']
-    image_ext = config['datasets']['deeper_forensics'].get('image_extension', None)
+    dataset_path = Path(config['path'])
+    real_folder = config.get('real_folder', 'real')
+    fake_folder = config.get('fake_folder', 'fake')
+    image_ext = config.get('image_extension', None)
 
-    # Video handling config (with safe defaults)
-    video_extensions = config['datasets']['deeper_forensics'].get(
+    # Video handling config
+    video_extensions = config.get(
         'video_extensions', ['.mp4', '.avi', '.mov', '.mkv']
     )
-    frame_stride = config['datasets']['deeper_forensics'].get('frame_stride', 30)  # every 30th frame
-    max_frames_per_video = config['datasets']['deeper_forensics'].get('max_frames_per_video', 10)
+    frame_stride = config.get('frame_stride', 30)
+    max_frames_per_video = config.get('max_frames_per_video', 10)
 
     dataset_items = []
 
@@ -69,7 +70,7 @@ def load_deeper_forensics_dataset(config: dict) -> list:
             image_files = list(base_path.rglob(f"*{image_ext}"))
             for img_path in image_files:
                 image_id = img_path.stem
-                dataset_items.append((img_path, image_id, 'deeper_forensics', label))
+                dataset_items.append((img_path, image_id, dataset_name, label))
 
         # 2) Video files → sample frames
         video_files = [p for p in base_path.rglob('*') if p.suffix.lower() in video_extensions]
@@ -80,16 +81,16 @@ def load_deeper_forensics_dataset(config: dict) -> list:
             frame_count = 0
             saved_count = 0
             while True:
-                ret = cap.grab()  # grab first for efficiency
+                ret = cap.grab()
                 if not ret:
                     break
                 if frame_count % frame_stride == 0:
                     ret2, frame_bgr = cap.retrieve()
                     if not ret2:
                         break
-                    # We pass raw frame (BGR); the processing loop will convert to RGB
+
                     image_id = f"{vid_path.stem}_f{frame_count}"
-                    dataset_items.append((frame_bgr, image_id, 'deeper_forensics', label))
+                    dataset_items.append((frame_bgr, image_id, dataset_name, label))
                     saved_count += 1
                     if saved_count >= max_frames_per_video:
                         break
@@ -108,6 +109,19 @@ def load_deeper_forensics_dataset(config: dict) -> list:
 
     return dataset_items
 
+def load_deeper_forensics_dataset(config: dict) -> list:
+    """
+    Load DeeperForensics-1.0 dataset
+    (Wrapper for the generic folder-based loader)
+    """
+    return _load_folder_based_dataset(config, 'deeper_forensics')
+
+def load_gen_ai_dataset(config: dict) -> list:
+    """
+    Load GenAI dataset
+    (Wrapper for the generic folder-based loader)
+    """
+    return _load_folder_based_dataset(config, 'gen_ai')
 
 def process_dataset(pipeline: PreprocessingPipeline,
                     dataset_items: list,
@@ -336,16 +350,16 @@ def main():
 
     if 'all' in args.datasets or 'deeper_forensics' in args.datasets:
         logger.info("Loading DeeperForensics-1.0 dataset...")
-        df_items = load_deeper_forensics_dataset(config)
+        df_items = load_deeper_forensics_dataset(config['datasets']['deeper_forensics'])
         dataset_items.extend(df_items)
         logger.info(f"Loaded {len(df_items)} images from DeeperForensics-1.0")
 
     if 'all' in args.datasets or 'gen_ai' in args.datasets:
         if 'gen_ai' in config['datasets']:
             logger.info("Loading GenAI dataset...")
-            # (중요) 기존 함수를 재사용하되, gen_ai 설정을 전달
             genai_config = config['datasets']['gen_ai']
-            genai_items = load_deeper_forensics_dataset(genai_config)
+            genai_items = load_gen_ai_dataset(genai_config)
+
             dataset_items.extend(genai_items)
             logger.info(f"Loaded {len(genai_items)} items from GenAI")
         else:

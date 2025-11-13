@@ -1,1 +1,3 @@
-/samples
+/data
+/deepfake_env
+__pycache__/

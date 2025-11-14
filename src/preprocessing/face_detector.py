@@ -6,7 +6,6 @@ Detects faces and extracts 5-point landmarks for alignment
 import torch
 import numpy as np
 from typing import Dict, List, Optional, Tuple
-from facenet_pytorch import MTCNN
 import cv2
 
 
@@ -31,6 +30,7 @@ class FaceDetector:
         # Initialize detector
         # Using MTCNN from facenet-pytorch as a reliable alternative
         # For production, use insightface's RetinaFace
+        from facenet_pytorch import MTCNN
         self.detector = MTCNN(
             keep_all=True,
             device=self.device,

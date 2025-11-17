@@ -262,6 +262,12 @@ class Trainer:
             # 현재 학습률
             current_lr = self.optimizer.param_groups[0]['lr']
 
+            # 체크포인트 저장
+            is_best = val_metrics['accuracy'] > self.metrics_tracker.best_metrics['best_val_acc']
+
+            if epoch % self.config['save_freq'] == 0 or is_best:
+                self._save_checkpoint(epoch, val_metrics, is_best)
+
             # Metrics Tracker 업데이트
             self.metrics_tracker.update(
                 epoch, train_metrics, val_metrics, current_lr
@@ -277,12 +283,6 @@ class Trainer:
             print(f"  Val   - Loss: {val_metrics['loss']:.4f}, Acc: {val_metrics['accuracy']:.2f}%, "
                   f"AUC: {val_metrics.get('auc', 0):.4f}")
             print(f"  LR: {current_lr:.6f}")
-
-            # 체크포인트 저장
-            is_best = val_metrics['accuracy'] > self.metrics_tracker.best_metrics['best_val_acc']
-
-            if epoch % self.config['save_freq'] == 0 or is_best:
-                self._save_checkpoint(epoch, val_metrics, is_best)
 
             # Early Stopping
             if self._early_stopping(val_metrics['loss']):

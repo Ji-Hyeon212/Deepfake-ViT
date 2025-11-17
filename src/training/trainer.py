@@ -6,7 +6,6 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 from pathlib import Path
 from typing import Dict, Optional, Tuple
@@ -78,9 +77,6 @@ class Trainer:
         # 디렉토리 생성
         self.save_dir = Path(self.config['save_dir'])
         self.save_dir.mkdir(parents=True, exist_ok=True)
-
-        # TensorBoard
-        self.writer = SummaryWriter(log_dir=self.config['log_dir'])
 
         # Evaluator
         self.evaluator = Evaluator(
@@ -273,9 +269,6 @@ class Trainer:
                 epoch, train_metrics, val_metrics, current_lr
             )
 
-            # TensorBoard 로깅
-            self._log_metrics(epoch, train_metrics, val_metrics, current_lr)
-
             # 출력
             epoch_time = time.time() - epoch_start
             print(f"\nEpoch {epoch}/{self.config['num_epochs']} - {epoch_time:.2f}s")
@@ -295,40 +288,6 @@ class Trainer:
 
         # 요약
         self.metrics_tracker.print_summary()
-
-        # TensorBoard 종료
-        self.writer.close()
-
-    def _log_metrics(
-            self,
-            epoch: int,
-            train_metrics: Dict,
-            val_metrics: Dict,
-            lr: float
-    ):
-        """TensorBoard에 메트릭 로깅"""
-        # Loss
-        self.writer.add_scalars('Loss', {
-            'train': train_metrics['loss'],
-            'val': val_metrics['loss']
-        }, epoch)
-
-        # Accuracy
-        self.writer.add_scalars('Accuracy', {
-            'train': train_metrics['accuracy'],
-            'val': val_metrics['accuracy']
-        }, epoch)
-
-        # AUC
-        if 'auc' in val_metrics:
-            self.writer.add_scalar('AUC', val_metrics['auc'], epoch)
-
-        # F1
-        if 'f1' in val_metrics:
-            self.writer.add_scalar('F1', val_metrics['f1'], epoch)
-
-        # Learning Rate
-        self.writer.add_scalar('Learning_Rate', lr, epoch)
 
     def _save_checkpoint(
             self,

@@ -18,7 +18,6 @@ from src.feature_extraction import (
     DeepfakeDetectionModel
 )
 from src.data import create_dataloaders
-from src.utils.visualization import visualize_attention_maps
 
 
 def test_backbone():

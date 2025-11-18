@@ -16,11 +16,7 @@ from src.data import create_dataloaders
 from src.feature_extraction import DeepfakeDetectionModel
 from src.training import Evaluator
 from src.utils import load_config, get_device, load_checkpoint
-from src.utils.visualization import (
-    plot_confusion_matrix,
-    plot_roc_curve,
-    visualize_batch
-)
+
 import numpy as np
 
 
@@ -79,50 +75,6 @@ def main(args):
 
     # 결과 출력
     evaluator.print_metrics(metrics, prefix="Test")
-
-    # 시각화
-    if args.visualize:
-        print("\n시각화 생성 중...")
-        output_dir = Path(args.output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        # 1. Confusion Matrix
-        plot_confusion_matrix(
-            metrics['labels'],
-            metrics['predictions'],
-            class_names=['Real', 'Fake'],
-            save_path=output_dir / 'confusion_matrix.png'
-        )
-
-        # 2. ROC Curve
-        if 'probabilities' in metrics:
-            auc = plot_roc_curve(
-                metrics['labels'],
-                metrics['probabilities'][:, 1],
-                save_path=output_dir / 'roc_curve.png'
-            )
-            print(f"AUC: {auc:.4f}")
-
-        # 3. 샘플 배치 시각화
-        batch = next(iter(test_loader))
-        images = batch['image'][:8]
-        labels = batch['label'][:8]
-        landmarks = batch['landmarks'][:8] if 'landmarks' in batch else None
-
-        with torch.no_grad():
-            logits, _ = model(images.to(device), landmarks.to(device) if landmarks is not None else None)
-            predictions = logits.argmax(dim=1).cpu()
-
-        visualize_batch(
-            images,
-            labels,
-            predictions,
-            landmarks,
-            num_samples=8,
-            save_path=output_dir / 'sample_predictions.png'
-        )
-
-        print(f"✅ 시각화 저장: {output_dir}")
 
     # 상세 분석
     if args.detailed:

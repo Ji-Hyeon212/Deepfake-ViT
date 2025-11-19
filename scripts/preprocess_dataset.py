@@ -53,7 +53,9 @@ def _load_folder_based_dataset(config: dict, dataset_name: str) -> list:
     dataset_path = Path(config['path'])
     real_folder = config.get('real_folder', 'real')
     fake_folder = config.get('fake_folder', 'fake')
-    image_ext = config.get('image_extension', None)
+
+    # Image handling config
+    image_extensions = config.get('image_extensions', [])
 
     # Video handling config
     video_extensions = config.get(
@@ -66,8 +68,12 @@ def _load_folder_based_dataset(config: dict, dataset_name: str) -> list:
 
     def collect_from_folder(base_path: Path, label: str):
         # 1) Pre-extracted images
-        if image_ext is not None:
-            image_files = list(base_path.rglob(f"*{image_ext}"))
+        if image_extensions:
+            image_files = []
+            # 리스트에 있는 모든 확장자를 순회하며 파일 검색
+            for ext in image_extensions:
+                image_files.extend(base_path.rglob(f"*{ext}"))
+
             for img_path in image_files:
                 image_id = img_path.stem
                 dataset_items.append((img_path, image_id, dataset_name, label))

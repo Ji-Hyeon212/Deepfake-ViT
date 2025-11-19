@@ -84,7 +84,7 @@ datasets:
     path: "data/raw/GenAI"
     real_folder: "real"
     fake_folder: "fake"
-    image_extension: ".png"    # GenAI 이미지 확장자
+    image_extensions: [".png", ".jpg", ".jpeg"]
     video_extensions: [".mp4"] # GenAI 비디오 확장자
     frame_stride: 30
     max_frames_per_video: 10

@@ -240,7 +240,7 @@ deepfake_detection/
 │
 ├── config/
 │   ├── preprocessing_config.yaml
-│   └── training_config.yaml
+│   └── model_config.yaml
 │
 ├── scripts/
 │   ├── preprocess_dataset.py
@@ -277,7 +277,7 @@ def main():
     print("\n다음 단계:")
     print("1. 데이터 다운로드 및 배치")
     print("2. 전처리 실행: python scripts/preprocess_dataset.py --config config/preprocessing_config.yaml --datasets all")
-    print("3. 학습 시작: python scripts/train.py --config config/training_config.yaml")
+    print("3. 학습 시작: python scripts/train.py --config config/model_config.yaml")
     print()
 
 

@@ -2,7 +2,7 @@
 모델 평가 스크립트
 위치: scripts/evaluate.py
 
-실행: python scripts/evaluate.py --checkpoint checkpoints/best_model.pth --config config/training_config.yaml
+실행: python scripts/evaluate.py --checkpoint checkpoints/best_model.pth --config config/model_config.yaml
 """
 
 import argparse
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--config',
         type=str,
-        default='config/training_config.yaml',
+        default='config/model_config.yaml',
         help='설정 파일 경로'
     )
     parser.add_argument(

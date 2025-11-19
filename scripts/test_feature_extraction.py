@@ -230,7 +230,7 @@ def main():
     print("✅ 모든 컴포넌트 정상 작동")
     print("\n다음 단계:")
     print("1. 학습 시작:")
-    print("   python scripts/train.py --config config/training_config.yaml")
+    print("   python scripts/train.py --config config/model_config.yaml")
     print("\n2. 평가:")
     print("   python scripts/evaluate.py --checkpoint checkpoints/best_model.pth")
     print("=" * 70 + "\n")

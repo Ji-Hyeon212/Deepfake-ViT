@@ -7,8 +7,9 @@ import torch
 import torch.nn as nn
 from efficientnet_pytorch import EfficientNet
 from typing import Optional, Tuple, Dict
+from pathlib import Path
 
-
+LOCAL_WEIGHTS_PATH = Path(__file__).parent.parent.parent / "model" / "efficientnet-b4-6ed6700e.pth"
 class EfficientNetB4Backbone(nn.Module):
     """
     EfficientNet-B4 백본
@@ -37,11 +38,20 @@ class EfficientNetB4Backbone(nn.Module):
 
         # EfficientNet-B4 로드
         if pretrained:
-            self.backbone = EfficientNet.from_pretrained(
+            # EfficientNet.from_pretrained 대신 from_name을 사용하여 다운로드를 방지
+            self.backbone = EfficientNet.from_name(
                 'efficientnet-b4',
                 num_classes=1000  # ImageNet
             )
-            print("✅ EfficientNet-B4 사전학습 가중치 로드 완료")
+
+            # 로컬 경로에서 가중치를 로드
+            if LOCAL_WEIGHTS_PATH.exists():
+                state_dict = torch.load(str(LOCAL_WEIGHTS_PATH), map_location='cpu')
+                self.backbone.load_state_dict(state_dict)
+                print("✅ EfficientNet-B4 가중치 로컬 경로에서 로드 완료")
+            else:
+                print(f"⚠️ EfficientNet-B4 로컬 가중치를 찾을 수 없습니다: {LOCAL_WEIGHTS_PATH}")
+                print("⚠️ EfficientNet-B4 랜덤 초기화")
         else:
             self.backbone = EfficientNet.from_name(
                 'efficientnet-b4',

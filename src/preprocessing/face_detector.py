@@ -206,14 +206,26 @@ class RetinaFaceDetector(FaceDetector):
 
         try:
             from insightface.app import FaceAnalysis
+            import os
+
+            # os.environ에서 경로를 읽어 root 인자로 전달
+            # task.ipynb에서 설정한 INSIGHTFACE_HOME 환경 변수를 사용
+            local_model_root = os.environ.get('INSIGHTFACE_HOME')
+
+            if not local_model_root:
+                # 오류 방지: 만약 환경 변수가 설정 안 되었으면 다운로드 시도 (실패)
+                local_model_root = None
 
             # Initialize InsightFace
             self.app = FaceAnalysis(
-                name='buffalo_l',  # or 'antelopev2'
+                name='buffalo_l',
+                root=local_model_root,  # <--- [핵심 수정] local_model_root을 root로 전달
                 providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
             )
+            # -----------------------------------------------------------
+
             self.app.prepare(ctx_id=0 if self.device == 'cuda' else -1)
-            print(f"[RetinaFace] Initialized with InsightFace")
+            print(f"[RetinaFace] Initialized with InsightFace (Root: {local_model_root})")
 
         except ImportError:
             raise ImportError(

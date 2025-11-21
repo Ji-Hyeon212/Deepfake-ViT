@@ -10,6 +10,7 @@
 고급 손실 함수: CrossEntropy, FocalLoss, ContrastiveLoss를 가중 결합한 CombinedLoss를 사용하여 불균형 데이터셋에서 학습 성능을 최적화합니다.
 
 📁 프로젝트 폴더 구조
+
 프로젝트는 모듈성과 확장성을 위해 계층적으로 구성되어 있습니다.
 ```
 deepfake-detection/
